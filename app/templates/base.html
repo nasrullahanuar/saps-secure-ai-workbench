@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block document_title %}SAPS Secure AI Workbench{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <script defer src="/static/vendor/htmx.min.js"></script>
+  <script defer src="/static/js/app.js"></script>
+</head>
+<body class="{% block body_class %}{% endblock %}" hx-boost="true">
+{% block shell %}
+  <div class="app-shell">
+    <aside class="sidebar" data-sidebar aria-label="Main navigation">
+      <a class="brand" href="/dashboard" aria-label="SAPS Secure AI Workbench home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 19 6v5c0 4.5-2.7 7.7-7 10-4.3-2.3-7-5.5-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
+        <span><span class="brand-name">SAPS Secure AI<br>Workbench</span><span class="brand-caption">Control workspace</span></span>
+      </a>
+
+      <p class="sidebar-section-label">Workspace</p>
+      <nav class="sidebar-nav">
+        <a class="nav-link {% if request.url.path == '/dashboard' %}is-active{% endif %}" href="/dashboard" {% if request.url.path == '/dashboard' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="11" width="7" height="10" rx="2"/><rect x="3" y="14" width="8" height="7" rx="2"/></svg>Dashboard
+        </a>
+        {% if user.role != 'it_admin' %}<a class="nav-link" href="/dashboard#documents">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v6h5M9 14h6M9 18h6"/></svg>Documents
+        </a>{% endif %}
+        {% if user.role != 'it_admin' %}
+        <a class="nav-link {% if request.url.path == '/documents/upload' %}is-active{% endif %}" href="/documents/upload" {% if request.url.path == '/documents/upload' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>Upload
+        </a>
+        <a class="nav-link {% if request.url.path == '/search' %}is-active{% endif %}" href="/search" {% if request.url.path == '/search' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6"/></svg>Search / Chat
+        </a>
+        <a class="nav-link {% if request.url.path == '/workflows' %}is-active{% endif %}" href="/workflows" {% if request.url.path == '/workflows' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 12h8M8 15h5"/></svg>Workflows
+        </a>
+        <a class="nav-link {% if request.url.path == '/drafts' %}is-active{% endif %}" href="/drafts" {% if request.url.path == '/drafts' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v6h5M9 14h6M9 18h4"/></svg>Drafts
+        </a>
+        <a class="nav-link {% if request.url.path == '/approvals' %}is-active{% endif %}" href="/approvals" {% if request.url.path == '/approvals' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>Approvals
+        </a>
+        {% endif %}
+        {% if user.role == 'partner' %}
+        <a class="nav-link {% if request.url.path.startswith('/admin/engagements') %}is-active{% endif %}" href="/admin/engagements" {% if request.url.path.startswith('/admin/engagements') %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0M19 5l1 1-1 1"/></svg>Independence
+        </a>
+        {% endif %}
+        {% if user.role == 'it_admin' %}
+        <a class="nav-link {% if request.url.path == '/admin/logs' %}is-active{% endif %}" href="/admin/logs" {% if request.url.path == '/admin/logs' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5h16M4 10h16M4 15h10M4 20h8"/></svg>System logs
+        </a>
+        {% elif user.role == 'partner' %}
+        <span class="nav-link is-disabled" aria-disabled="true" title="Available in a later phase">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V5m0 14h16"/><path d="m7 15 4-4 3 2 5-6"/></svg>Audit Log<span class="nav-soon">Later</span>
+        </span>
+        {% endif %}
+        {% if user.role == 'it_admin' %}
+        <a class="nav-link {% if request.url.path == '/admin/users' %}is-active{% endif %}" href="/admin/users" {% if request.url.path == '/admin/users' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0M19 5l1 1-1 1"/></svg>User management
+        </a>
+        {% endif %}
+        {% if user.role in ['partner', 'it_admin'] %}
+        <a class="nav-link {% if request.url.path == '/admin/deletion' %}is-active{% endif %}" href="/admin/deletion" {% if request.url.path == '/admin/deletion' %}aria-current="page"{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg>Secure deletion
+        </a>
+        {% endif %}
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="local-status"><span class="status-dot" aria-hidden="true"></span><span><strong>Local workspace</strong><br>Data stays on this device</span></div>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn-icon mobile-menu" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <span class="topbar-title">{% block topbar_title %}Secure workspace{% endblock %}</span>
+        </div>
+        <div class="topbar-actions">
+          <span class="mfa-label"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>MFA verified</span>
+          <span class="role-badge">Role: {{ user.role }}</span>
+          <button class="btn-icon" type="button" data-theme-toggle aria-label="Switch to dark mode" title="Switch theme">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+          </button>
+          <span class="avatar" aria-hidden="true">{{ user.username[:1] | upper }}</span>
+          <span class="user-block"><span class="user-name">{{ user.username }}</span><span class="user-meta">Signed in</span></span>
+          <form method="post" action="/logout"><button class="btn btn-ghost" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg><span class="logout-text">Log out</span></button></form>
+        </div>
+      </header>
+      <div class="demo-banner">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 2.5 18 17H2L10 2.5Z"/><path d="M10 7v4m0 2.5v.1"/></svg>
+        LAB DEMO - SYNTHETIC DATA ONLY
+      </div>
+      <main class="main-content" id="main-content">{% block content %}{% endblock %}</main>
+      <footer class="footer-note">SAPS Secure AI Workbench <span aria-hidden="true">&middot;</span> Local university lab demonstrator</footer>
+    </div>
+  </div>
+{% endblock %}
+</body>
+</html>

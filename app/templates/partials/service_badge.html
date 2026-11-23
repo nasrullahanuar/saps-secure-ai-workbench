@@ -1,0 +1,2 @@
+{% set service_class = {'audit': 'badge-audit', 'accounting': 'badge-accounting', 'cosec': 'badge-cosec'}.get(service, 'badge-internal') %}
+<span class="badge {{ service_class }}">{% if service == 'cosec' %}Company Secretarial{% else %}{{ service | title }}{% endif %}</span>

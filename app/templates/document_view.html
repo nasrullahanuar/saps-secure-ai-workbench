@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block document_title %}Document | SAPS Secure AI Workbench{% endblock %}
+{% block topbar_title %}Documents / Source view{% endblock %}
+{% block content %}
+  <section class="page-heading"><div><p class="eyebrow">Authorized source</p><h1>{{ document.filename }}</h1><p>Client {{ document.client_id }} - {{ document.service_line | title }}</p></div><a class="btn btn-secondary" href="/dashboard#documents">Back to documents</a></section>
+  <div class="draft-banner">LAB DEMO - SYNTHETIC DATA ONLY</div>
+  <section class="card source-view"><div class="card-header"><div><h2>Redacted document text</h2><p>Source contents remain within the authorized client/service-line scope.</p></div>{% set classification = document.classification %}{% include 'partials/classification_badge.html' %}</div><div class="card-body"><pre>{{ content }}</pre></div></section>
+{% endblock %}

@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+data/
+backups/
+evidence/
+logs/
+*.db
+*.sqlite
+*.sqlite3
+saps_lab.egg-info/

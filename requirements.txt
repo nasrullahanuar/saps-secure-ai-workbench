@@ -1,0 +1,15 @@
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+jinja2>=3.1,<4.0
+python-multipart>=0.0.9,<1.0
+sqlalchemy>=2.0,<3.0
+argon2-cffi>=23.1,<26.0
+pyotp>=2.9,<3.0
+python-dotenv>=1.0,<2.0
+Faker>=25,<40
+pytest>=8,<9
+httpx>=0.27,<1.0
+itsdangerous>=2.2,<3.0
+ollama>=0.4.7,<1.0
+chromadb>=0.5.23,<2.0
+cryptography>=42,<47

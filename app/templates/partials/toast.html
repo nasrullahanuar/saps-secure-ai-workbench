@@ -1,0 +1,7 @@
+{% if error or result %}
+<div class="toast" role="{% if error %}alert{% else %}status{% endif %}" data-toast>
+  <span class="status-dot" aria-hidden="true"></span>
+  <span>{% if error %}{{ error }}{% elif result.status == 'redacted' %}Sensitive values were redacted before storage.{% else %}Document scanned and stored successfully.{% endif %}</span>
+  <button class="toast-close" type="button" data-toast-close aria-label="Dismiss notification">&times;</button>
+</div>
+{% endif %}

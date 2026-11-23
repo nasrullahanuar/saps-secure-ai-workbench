@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block document_title %}Dashboard | SAPS Secure AI Workbench{% endblock %}
+{% block topbar_title %}Overview / Dashboard{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div><p class="eyebrow">Control overview</p><h1>Good to see you, {{ user.username }}</h1><p>Your current assignments and recent workspace activity are shown below.</p></div>
+    {% if user.role != 'it_admin' %}<a class="btn btn-primary" href="/documents/upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>Upload document</a>{% endif %}
+  </section>
+
+  <section class="stats-grid" aria-label="Workspace summary">
+    <article class="card stat-card"><div><span class="stat-label">Assigned clients</span><strong class="stat-value">{{ stats.clients }}</strong><span class="stat-note">Active engagements only</span></div><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0m2-9a3 3 0 1 0 0-6m1 9a5 5 0 0 1 3 5"/></svg></span></article>
+    <article class="card stat-card"><div><span class="stat-label">Accessible documents</span><strong class="stat-value">{{ stats.documents }}</strong><span class="stat-note">Within your assignments</span></div><span class="stat-icon is-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v6h5M9 14h6M9 18h6"/></svg></span></article>
+    <article class="card stat-card"><div><span class="stat-label">Pending drafts</span><strong class="stat-value">{{ stats.pending_drafts }}</strong><span class="stat-note">Awaiting review or approval</span></div><span class="stat-icon is-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></article>
+    <article class="card stat-card"><div><span class="stat-label">Blocked uploads</span><strong class="stat-value">{{ stats.blocked_uploads }}</strong><span class="stat-note">Denied or rejected attempts</span></div><span class="stat-icon is-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 20 7v5c0 4.5-3 7.5-8 9-5-1.5-8-4.5-8-9V7l8-4Z"/><path d="m9 9 6 6m0-6-6 6"/></svg></span></article>
+  </section>
+
+  <div class="section-grid">
+    <section class="card" aria-labelledby="engagements-title">
+      <div class="card-header"><div><h2 id="engagements-title">My engagements</h2><p>Access is limited to these client and service-line pairs.</p></div><span class="role-badge">{{ user.role | replace('_', ' ') | title }}</span></div>
+      {% if assignments %}
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Client</th><th>Client code</th><th>Service line</th><th>Access</th></tr></thead><tbody>
+          {% for group in assignments | groupby('client') %}
+            {% for item in group.list %}<tr><td><strong>{{ item.client }}</strong></td><td><code class="code-tag">{{ item.code }}</code></td><td>{% set service = item.service_line %}{% include 'partials/service_badge.html' %}</td><td><span class="access-state"><span class="status-dot" aria-hidden="true"></span>Active</span></td></tr>{% endfor %}
+          {% endfor %}
+        </tbody></table></div>
+      {% else %}
+        <div class="empty-state"><span class="empty-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><strong>No client engagements assigned</strong>System administration does not grant access to client content.</div>
+      {% endif %}
+    </section>
+
+    <section class="card" aria-labelledby="activity-title">
+      <div class="card-header"><div><h2 id="activity-title">Recent activity</h2><p>Your latest account events</p></div><span class="mfa-label">Current session active</span></div>
+      <div class="card-body activity-list">
+        {% for event in recent_activity %}<article class="activity-item"><span class="activity-marker" aria-hidden="true"></span><div><div class="activity-title">{{ event.event_type | replace('_', ' ') | title }}</div><div class="activity-time">{{ event.created_at.strftime('%d %b %Y, %H:%M') }} local time</div></div></article>{% else %}<div class="empty-state"><strong>No recent activity yet</strong>Workspace events will appear here.</div>{% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <section class="card documents-card" id="documents" data-documents-table aria-labelledby="documents-title">
+    <div class="card-header"><div><h2 id="documents-title">Documents</h2><p>Recent documents visible to your assigned engagements.</p></div><span class="badge badge-internal">{{ stats.documents }} total</span></div>
+    <div class="table-toolbar">
+      <div class="filter-group"><span class="filter-label">Service</span><div class="filter-chips" role="group" aria-label="Filter by service line">
+        <button class="filter-chip is-selected" type="button" data-filter-type="service" data-filter-value="all" aria-pressed="true">All</button>
+        <button class="filter-chip" type="button" data-filter-type="service" data-filter-value="audit" aria-pressed="false">Audit</button>
+        <button class="filter-chip" type="button" data-filter-type="service" data-filter-value="accounting" aria-pressed="false">Accounting</button>
+        <button class="filter-chip" type="button" data-filter-type="service" data-filter-value="cosec" aria-pressed="false">Company Secretarial</button>
+      </div></div>
+      <div class="filter-group"><span class="filter-label">Classification</span><div class="filter-chips" role="group" aria-label="Filter by classification">
+        <button class="filter-chip is-selected" type="button" data-filter-type="classification" data-filter-value="all" aria-pressed="true">All</button>
+        <button class="filter-chip" type="button" data-filter-type="classification" data-filter-value="public" aria-pressed="false">Public</button>
+        <button class="filter-chip" type="button" data-filter-type="classification" data-filter-value="internal" aria-pressed="false">Internal</button>
+        <button class="filter-chip" type="button" data-filter-type="classification" data-filter-value="confidential" aria-pressed="false">Confidential</button>
+        <button class="filter-chip" type="button" data-filter-type="classification" data-filter-value="restricted" aria-pressed="false">Restricted</button>
+      </div></div>
+      <label class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span class="sr-only">Search accessible documents</span><input class="input" type="search" placeholder="Search documents" data-document-search></label>
+    </div>
+    {% if documents %}<div class="table-wrap"><table class="data-table"><thead><tr><th><button class="sort-button" type="button" data-sort-key="filename">Document <span aria-hidden="true">↕</span></button></th><th>Service line</th><th>Classification</th><th>Status</th><th><button class="sort-button" type="button" data-sort-key="created">Added <span aria-hidden="true">↕</span></button></th></tr></thead><tbody>
+      {% for document in documents %}<tr data-document-row data-service="{{ document.service_line }}" data-classification="{{ document.classification }}" data-filename="{{ document.filename | lower }}" data-created="{{ document.created_at.strftime('%Y-%m-%d %H:%M') }}"><td><span class="file-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v6h5M9 14h6"/></svg></span><a href="/documents/{{ document.id }}?client_id={{ document.client_id }}&amp;service_line={{ document.service_line }}">{{ document.filename }}</a></td><td>{% set service = document.service_line %}{% include 'partials/service_badge.html' %}</td><td>{% set classification = document.classification %}{% include 'partials/classification_badge.html' %}</td><td><span class="badge {% if document.ingestion_status == 'redacted' %}badge-warning{% else %}badge-success{% endif %}">{{ document.ingestion_status | title }}</span></td><td>{{ document.created_at.strftime('%d %b %Y') }}</td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<div class="empty-state"><span class="empty-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v6h5"/></svg></span><strong>No documents yet</strong>Upload a synthetic file to an assigned engagement to see it here.</div>{% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block document_title %}Secure deletion | SAPS Secure AI Workbench{% endblock %}
+{% block topbar_title %}Operations / Secure deletion{% endblock %}
+{% block content %}
+  <section class="page-heading"><div><p class="eyebrow">Partner or IT administrator</p><h1>Per-client data deletion</h1><p>Removes stored document files, vector collections, drafts, citations, and approvals. A client tombstone and deletion event remain for auditability.</p></div><span class="badge badge-danger">Destructive operation</span></section>
+  <div class="alert alert-warning page-alert">This operation removes client workspace content and cannot be undone without a verified backup restore. The append-only audit log is retained.</div>
+  {% if deleted %}<div class="alert alert-success page-alert" role="status">{{ deleted }}</div>{% endif %}
+  <section class="card"><div class="card-header"><div><h2>Delete client workspace</h2><p>Confirm by typing DELETE. Content is not displayed on this page.</p></div></div><div class="card-body">{% if clients %}<form method="post" action="/admin/client-deletion" class="workflow-form" hx-boost="false"><label class="field"><span>Client</span><select class="select" name="client_id" required>{% for client in clients %}<option value="{{ client.id }}">{{ client.name }}</option>{% endfor %}</select></label><label class="field"><span>Confirmation</span><input class="input" name="confirmation" value="" placeholder="Type DELETE" autocomplete="off" required></label><button class="btn btn-danger" type="submit">Delete client data</button></form>{% else %}<div class="empty-state"><strong>No active client workspaces</strong>All clients are already marked as deleted.</div>{% endif %}</div></section>
+{% endblock %}

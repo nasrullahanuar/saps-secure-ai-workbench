@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block document_title %}Search / Chat | SAPS Secure AI Workbench{% endblock %}
+{% block topbar_title %}Workspace / Local search{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div><p class="eyebrow">Local retrieval</p><h1>Search your assigned workspace</h1><p>Answers use only source chunks from the selected engagement and the local Ollama service.</p></div>
+    <span class="badge badge-success">Local model only</span>
+  </section>
+  <div class="draft-banner"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 2.5 18 17H2L10 2.5Z"/><path d="M10 7v4m0 2.5v.1"/></svg>AI-generated draft - not audit evidence / not an approved entry / not a filed document</div>
+  {% if error %}<div class="alert alert-error page-alert" role="alert"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 6v5m0 3v.1"/></svg><span><strong>Access denied or prompt blocked</strong><br>{{ error }}</span></div>{% endif %}
+  <section class="card chat-card" aria-labelledby="search-form-title">
+    <div class="card-header"><div><h2 id="search-form-title">Ask about authorized sources</h2><p>Do not enter real client information or credentials.</p></div><span class="role-badge">Prompt scan enabled</span></div>
+    <div class="card-body">
+      {% if choices %}
+        <form method="post" action="/search" class="form-stack chat-form" hx-boost="false">
+          <div class="field"><label for="client-service">Client and service line</label><select class="select" id="client-service" name="client_service" required>{% for choice in choices %}<option value="{{ choice.client_id }}:{{ choice.service_line }}" {% if selected_client_service == choice.client_id|string + ':' + choice.service_line %}selected{% endif %}>{{ choice.client_name }} - {{ choice.service_line | title }}</option>{% endfor %}</select><span class="field-hint">Only active engagements assigned to your account are listed.</span></div>
+          <div class="field"><label for="prompt">Question</label><textarea class="input prompt-input" id="prompt" name="prompt" rows="4" maxlength="4000" placeholder="Ask a question about the selected synthetic documents..." required>{{ submitted_prompt or '' }}</textarea><span class="field-hint">The same privacy scanner checks this prompt before any model request.</span></div>
+          <button class="btn btn-primary" type="submit" data-submit-button><span class="spinner" aria-hidden="true"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Search and draft answer</button>
+        </form>
+      {% else %}
+        <div class="empty-state"><strong>No searchable engagements</strong>This account has no active client/service-line assignments.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if result %}
+    <section class="card answer-card" aria-labelledby="answer-title" aria-live="polite">
+      <div class="card-header"><div><h2 id="answer-title">Local model response</h2><p>Saved as Draft #{{ saved_draft.id }}. Review every statement against the cited source chunks.</p></div><span class="badge badge-warning">Draft response</span></div>
+      <div class="card-body">
+        <div class="answer-text">{{ result.answer }}</div>
+        {% if result.sources %}<div class="source-list"><h3>Retrieved source chunks</h3>
+          {% for source in result.sources %}<details class="source-card"><summary><span class="citation-chip">[{{ source.reference }}]</span><span>{{ source.filename }}</span>{% set classification = source.classification %}{% include 'partials/classification_badge.html' %}{% if source.injection_detected %}<span class="badge badge-danger">Instruction-like text</span>{% endif %}</summary><div class="source-content"><pre>{{ source.text }}</pre>{% if source.injection_detected %}<p class="source-warning">This source contains instruction-like text. It was treated as untrusted data.</p>{% endif %}</div></details>{% endfor %}
+        </div>{% else %}<div class="empty-state"><strong>No source chunks found</strong>Upload an assigned synthetic document first, then try again.</div>{% endif %}
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}

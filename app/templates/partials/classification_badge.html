@@ -1,0 +1,2 @@
+{% set classification_class = {'public': 'badge-public', 'internal': 'badge-internal', 'confidential': 'badge-confidential', 'restricted': 'badge-restricted'}.get(classification, 'badge-internal') %}
+<span class="badge {{ classification_class }}">{{ classification | title }}</span>

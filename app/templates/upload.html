@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block document_title %}Upload | SAPS Secure AI Workbench{% endblock %}
+{% block topbar_title %}Documents / Secure upload{% endblock %}
+{% block content %}
+  <section class="page-heading">
+    <div><p class="eyebrow">Ingestion control</p><h1>Secure document upload</h1><p>Scan synthetic working papers before they enter the assigned client workspace.</p></div>
+    <a class="btn btn-secondary" href="/dashboard#documents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>View documents</a>
+  </section>
+
+  {% if error %}<div class="alert alert-error page-alert" role="alert"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 6v5m0 3v.1"/></svg><span><strong>Upload blocked</strong><br>{{ error }}</span></div>{% endif %}
+  {% if result %}
+    <section class="card result-card {% if result.status == 'redacted' %}result-redacted{% else %}result-allowed{% endif %}" aria-labelledby="scan-title" aria-live="polite">
+      <div class="scan-result-header">
+        <div><p class="eyebrow">Server-side scan complete</p><h2 id="scan-title">Upload decision</h2></div>
+        {% if result.status == 'redacted' %}<span class="badge badge-warning result-status">Redacted</span>{% else %}<span class="badge badge-success result-status">Allowed</span>{% endif %}
+      </div>
+      <div class="result-metrics"><div><span class="field-hint">Classification</span>{% set classification = result.classification %}{% include 'partials/classification_badge.html' %}</div><div><span class="field-hint">Findings</span><strong>{{ result.finding_count }}</strong></div><div><span class="field-hint">Storage</span><strong>Redacted content only</strong></div></div>
+      {% if result.categories %}<div><span class="field-label">Detected and redacted</span><ul class="finding-list">{% for category in result.categories %}{% set finding_label = {'mykad': 'NRIC / MyKad pattern', 'passport': 'Passport-like ID', 'bank_account': 'Bank account number', 'tax_identifier': 'Tax identifier', 'api_key': 'API key', 'bearer_token': 'Bearer token', 'client_secret': 'Client secret', 'password': 'Password'}.get(category, category | replace('_', ' ') | title) %}<li><span class="severity-dot" aria-hidden="true"></span>{{ finding_label }} detected - redacted</li>{% endfor %}</ul></div>{% else %}<div class="alert alert-success"><span>Scan clear. The synthetic document was stored under the selected engagement.</span></div>{% endif %}
+      <p class="result-note">Matched values are never displayed in this result or included in the audit event.</p>
+    </section>
+  {% endif %}
+
+  <div class="upload-grid">
+    <section class="card" aria-labelledby="upload-form-title">
+      <div class="card-header"><div><h2 id="upload-form-title">Choose an engagement</h2><p>Only your assigned client and service-line pairs are available.</p></div><span class="badge badge-success">Access checked</span></div>
+      <div class="card-body">
+        {% if choices %}
+          <form method="post" action="/documents/upload" enctype="multipart/form-data" class="form-stack" data-upload-form hx-boost="false">
+            <div class="field"><label for="client-service">Assigned client and service line</label><select class="select" id="client-service" name="client_service" required>{% for choice in choices %}<option value="{{ choice.client_id }}:{{ choice.service_line }}">{{ choice.client_name }} - {{ choice.service_line | title }}</option>{% endfor %}</select><span class="field-hint">Server authorization is checked before the upload is read.</span></div>
+            <div class="field"><span class="field-label">Synthetic document</span><label class="drop-zone" data-drop-zone for="upload-file"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg><strong>Choose a file or drag it here</strong><span data-file-hint>UTF-8 text only - .txt, .csv, or .md - up to 1 MiB</span><input id="upload-file" data-file-input name="file" type="file" accept=".txt,.csv,.md,text/plain,text/csv" required></span></label></div>
+            <button class="btn btn-primary" type="submit" data-submit-button><span class="spinner" aria-hidden="true"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Scan and store safely</button>
+          </form>
+        {% else %}
+          <div class="empty-state"><span class="empty-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 20 7v5c0 4.5-3 7.5-8 9-5-1.5-8-4.5-8-9V7l8-4Z"/><path d="m9 9 6 6m0-6-6 6"/></svg></span><strong>No upload access available</strong>This account has no active client/service-line engagement.</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <aside class="card" aria-labelledby="scan-policy-title">
+      <div class="card-header"><div><h2 id="scan-policy-title">What the gate checks</h2><p>Detection happens on the server before storage.</p></div></div>
+      <div class="card-body">
+        <ul class="policy-list"><li><span class="policy-icon">ID</span><span><strong>Identity patterns</strong><small>NRIC / MyKad and passport-like values</small></span></li><li><span class="policy-icon">BK</span><span><strong>Financial identifiers</strong><small>Bank account and tax identifier patterns</small></span></li><li><span class="policy-icon">KEY</span><span><strong>Credentials</strong><small>API keys, bearer tokens, passwords, MyInvois and SSM secrets</small></span></li></ul>
+        <div class="upload-policy"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="8" width="12" height="9" rx="2"/><path d="M7 8V6a3 3 0 0 1 6 0v2m-3 4v2"/></svg><span>Detected values are redacted before file storage. Audit logs contain decision metadata only.</span></div>
+      </div>
+    </aside>
+  </div>
+  {% include 'partials/toast.html' %}
+{% endblock %}

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "saps-lab"
+version = "0.1.0"
+description = "Synthetic, local-only security controls demonstrator for SAPS"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "uvicorn[standard]>=0.30,<1.0",
+  "jinja2>=3.1,<4.0",
+  "python-multipart>=0.0.9,<1.0",
+  "SQLAlchemy>=2.0,<3.0",
+  "argon2-cffi>=23.1,<26.0",
+  "pyotp>=2.9,<3.0",
+  "itsdangerous>=2.2,<3.0",
+  "ollama>=0.4.7,<1.0",
+  "chromadb>=0.5.23,<2.0",
+  "cryptography>=42,<47",
+  "python-dotenv>=1.0,<2.0",
+  "Faker>=25,<40",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "httpx>=0.27,<1.0", "itsdangerous>=2.2,<3.0"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

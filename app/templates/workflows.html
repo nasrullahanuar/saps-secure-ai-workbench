@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block document_title %}Workflows | SAPS Secure AI Workbench{% endblock %}
+{% block topbar_title %}Workspace / Guided workflows{% endblock %}
+{% block content %}
+  <section class="page-heading"><div><p class="eyebrow">Source-grounded work</p><h1>Professional services workflows</h1><p>Each generated result is saved as a draft with citations from your assigned synthetic engagement.</p></div><span class="badge badge-success">Local Ollama</span></section>
+  <div class="draft-banner"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 2.5 18 17H2L10 2.5Z"/><path d="M10 7v4m0 2.5v.1"/></svg>AI-generated draft - not audit evidence / not an approved entry / not a filed document</div>
+  {% if error %}<div class="alert alert-error page-alert" role="alert">{{ error }}</div>{% endif %}
+  {% if saved_draft %}<section class="card answer-card"><div class="card-header"><div><h2>{{ saved_draft.title }}</h2><p>Saved as Draft #{{ saved_draft.id }}. Review the claims and citations before requesting review.</p></div><a class="btn btn-secondary" href="/drafts">Open drafts</a></div><div class="card-body"><pre class="workflow-output">{{ saved_draft.content }}</pre></div></section>{% endif %}
+  {% for service_line, workflow in workflows.items() %}
+    {% set namespace = namespace(available=false) %}{% for choice in choices %}{% if choice.service_line == service_line %}{% set namespace.available = true %}{% endif %}{% endfor %}
+    {% if namespace.available %}
+    <section class="card workflow-card"><div class="card-header"><div><p class="eyebrow">{{ service_line | title }}</p><h2>{{ workflow.title }}</h2></div><span class="badge badge-info">Creates a cited draft</span></div><div class="card-body"><p>{% if service_line == 'audit' %}Review the synthetic general ledger for round amounts, weekend postings, and duplicates.{% elif service_line == 'accounting' %}Extract invoice fields and suggest a draft journal classification. Nothing is posted.{% else %}Use synthetic registers and minutes to draft a resolution template and source-stated deadline checklist.{% endif %}</p><form method="post" action="/workflows/generate" class="workflow-form" hx-boost="false"><label class="field"><span>Assigned client and service line</span><select class="select" name="client_service" required>{% for choice in choices if choice.service_line == service_line %}<option value="{{ choice.client_id }}:{{ choice.service_line }}" {% if selected_client_service == choice.client_id|string + ':' + choice.service_line %}selected{% endif %}>{{ choice.client_name }} - {{ choice.service_line | title }}</option>{% endfor %}</select></label><button class="btn btn-primary" type="submit" data-submit-button><span class="spinner" aria-hidden="true"></span>Generate {{ workflow.title | lower }}</button></form></div></section>
+    {% endif %}
+  {% endfor %}
+  {% if not choices %}<div class="empty-state"><strong>No workflow engagements assigned</strong>Ask a partner to assign a client and service line first.</div>{% endif %}
+{% endblock %}
